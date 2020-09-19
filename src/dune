@@ -1,0 +1,4 @@
+(executable
+ (name opixelserve)
+ (public_name opixelserve)
+ (package opixelserve))

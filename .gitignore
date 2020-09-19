@@ -1,0 +1,10 @@
+*.byte
+*.native
+*.mo
+opixelserve.install
+.merlin
+.bsb.lock
+/_build
+/bin
+/lib
+/.vscode
