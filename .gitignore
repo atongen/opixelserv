@@ -8,3 +8,4 @@ opixelserve.install
 /bin
 /lib
 /.vscode
+/test/tmp/
