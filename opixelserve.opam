@@ -27,4 +27,7 @@ depends: [
   "magic-mime"
   "nocrypto"
   "ocaml"
+  "x509"
+  "cstruct"
+  "ptime"
 ]

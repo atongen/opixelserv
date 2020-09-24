@@ -23,5 +23,8 @@
   lwt
   magic-mime
   nocrypto
-  ocaml)
+  ocaml
+  x509
+  cstruct
+  ptime)
  )
