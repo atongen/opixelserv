@@ -26,5 +26,6 @@
   ocaml
   x509
   cstruct
+  sexplib
   ptime)
  )

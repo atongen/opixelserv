@@ -21,7 +21,8 @@ import (
 // cli flags
 var (
 	rFlag = flag.Int("r", 100000, "num requests")
-	dFlag = flag.Int("d", 1024, "num domains")
+	dFlag = flag.Int("d", 0, "num domains")
+	lFlag = flag.String("l", "", "list domains")
 	wFlag = flag.Int("w", runtime.NumCPU(), "num workers")
 	cFlag = flag.String("c", "/var/cache/pixelserv/ca.crt", "ca cert path")
 	pFlag = flag.String("p", "127.0.0.1", "pixelserve ip address")
@@ -61,7 +62,7 @@ func printResults(results map[string]int, startTime time.Time) {
 	if len(results) == 0 {
 		log.Printf("Results empty after %f secons\n", diff.Seconds())
 	} else {
-		log.Println("###")
+		log.Println("")
 		keys := sortedKeys(results)
 		for _, status := range keys {
 			n := results[status]
@@ -77,12 +78,18 @@ func handleRes(res <-chan string) {
 	results := map[string]int{}
 	ticker := time.NewTicker(1 * time.Second)
 
+	i := 0
 	for {
 		select {
 		case <-ticker.C:
 			printResults(results, startTime)
 		case r := <-res:
 			results[r]++
+			i++
+		}
+		if i >= *rFlag {
+			printResults(results, startTime)
+			return
 		}
 	}
 }
@@ -110,9 +117,21 @@ func main() {
 	flag.Parse()
 	rand.Seed(time.Now().Unix())
 
-	domains := make([]string, *dFlag)
-	for i := 0; i < *dFlag; i++ {
-		domains[i] = fmt.Sprintf("%s.com", randStr(10))
+	var domains []string
+	if *dFlag > 0 && *lFlag != "" {
+		log.Fatal("Cannot num and list domains")
+	} else if *dFlag > 0 {
+		for i := 0; i < *dFlag; i++ {
+			domains = append(domains, fmt.Sprintf("%s.com", randStr(10)))
+		}
+	} else if *lFlag != "" {
+		domains = strings.Split(*lFlag, ",")
+	} else {
+		log.Fatal("Must either list or num domains")
+	}
+
+	if len(domains) == 0 {
+		log.Fatal("No domains found")
 	}
 
 	caCert, err := ioutil.ReadFile(*cFlag)
@@ -142,19 +161,22 @@ func main() {
 	}
 
 	res := make(chan string, *wFlag)
-	go handleRes(res)
 
-	sem := make(chan bool, *wFlag)
-	for i := 0; i < *rFlag; i++ {
-		sem <- true
-		host := makeHost(domains)
-		go doReq(client, host, sem, res)
-	}
+	go func() {
+		sem := make(chan bool, *wFlag)
+		for i := 0; i < *rFlag; i++ {
+			sem <- true
+			host := makeHost(domains)
+			go doReq(client, host, sem, res)
+		}
 
-	// drain semaphore
-	for i := 0; i < cap(sem); i++ {
-		sem <- true
-	}
+		// drain semaphore
+		for i := 0; i < cap(sem); i++ {
+			sem <- true
+		}
+	}()
+
+	handleRes(res)
 
 	time.Sleep(2 * time.Second)
 	log.Println("Goodbye!")
