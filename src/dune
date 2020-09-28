@@ -11,3 +11,16 @@
   cohttp-lwt-unix
   lwt)
  (package opixelserv))
+
+(executable
+ (name opixtest)
+ (public_name opixtest)
+ (modules
+  opixtest
+  responses)
+ (libraries
+  tls
+  tls.lwt
+  lwt
+  lwt.unix)
+ (package opixelserv))

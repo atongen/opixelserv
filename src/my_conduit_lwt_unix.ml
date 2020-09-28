@@ -328,15 +328,9 @@ let serve_with_openssl ?timeout ?stop ~ctx ~certfile ~keyfile
     ?password ~certfile ~keyfile ?timeout ?stop sockaddr
     (fun addr fd ic oc -> callback (flow_of_fd fd addr) ic oc)
 
-let serve_with_tls_native ?timeout ?stop ~ctx ~certfile ~keyfile
-                          ~pass ~port callback =
+let serve_with_tls_native ?timeout ?stop ~ctx ~port callback =
   let sockaddr, _ = sockaddr_on_tcp_port ctx port in
-  (match pass with
-    | `No_password -> Lwt.return ()
-    | `Password _ -> Lwt.fail_with "OCaml-TLS cannot handle encrypted pem files"
-  ) >>= fun () ->
-  My_server.init
-    ~certfile ~keyfile ?timeout ?stop sockaddr
+  My_server.init ?timeout ?stop sockaddr
     (fun addr fd ic oc -> callback (flow_of_fd fd addr) ic oc)
 
 let serve_with_default_tls ?timeout ?stop ~ctx ~certfile ~keyfile
@@ -344,8 +338,7 @@ let serve_with_default_tls ?timeout ?stop ~ctx ~certfile ~keyfile
   match !tls_library with
   | OpenSSL -> serve_with_openssl ?timeout ?stop ~ctx ~certfile ~keyfile
                  ~pass ~port callback
-  | Native -> serve_with_tls_native ?timeout ?stop ~ctx ~certfile ~keyfile
-                ~pass ~port callback
+  | Native -> serve_with_tls_native ?timeout ?stop ~ctx ~port callback
   | No_tls -> failwith "No SSL or TLS support compiled into Conduit"
 
 let serve ?backlog ?timeout ?stop
@@ -372,10 +365,9 @@ let serve ?backlog ?timeout ?stop
               pass, `Port port) ->
     serve_with_openssl ?timeout ?stop ~ctx ~certfile ~keyfile
       ~pass ~port callback
-  | `TLS_native (`Crt_file_path certfile, `Key_file_path keyfile,
-                 pass, `Port port) ->
-    serve_with_tls_native ?timeout ?stop ~ctx ~certfile ~keyfile
-      ~pass ~port callback
+  | `TLS_native (`Crt_file_path _certfile, `Key_file_path _keyfile,
+                 _pass, `Port port) ->
+    serve_with_tls_native ?timeout ?stop ~ctx ~port callback
   |`Vchan_direct _ -> Lwt.fail_with "Vchan_direct not implemented"
   | `Vchan_domain_socket _uuid ->
     Lwt.fail_with "Vchan_domain_socket not implemented"

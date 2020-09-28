@@ -15,7 +15,7 @@
  (description "Opixelserv!")
  (depends
   (dune (>= 1.10))
-  tls
+  (tls (= 0.12.5))
   lru
   cmdliner
   cohttp-lwt-unix
