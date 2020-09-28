@@ -1,4 +1,4 @@
-# opixelserve
+# opixelserv
 
 pure ocaml alternative to pixelserve-tls
 

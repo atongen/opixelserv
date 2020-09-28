@@ -1,13 +1,13 @@
 (executable
- (name opixelserve)
- (public_name opixelserve)
+ (name opixelserv)
+ (public_name opixelserv)
  (modules
   my_io
   my_conduit_lwt_unix
   my_server
-  opixelserve)
+  opixelserv)
  (libraries
   cohttp
   cohttp-lwt-unix
   lwt)
- (package opixelserve))
+ (package opixelserv))

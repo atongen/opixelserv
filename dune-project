@@ -1,18 +1,18 @@
 (lang dune 1.10)
-(name opixelserve)
+(name opixelserv)
 (version 0.1.0)
 (generate_opam_files true)
 
-(source (github atongen/opixelserve))
-(documentation "https://atongen.github.io/opixelserve")
+(source (github atongen/opixelserv))
+(documentation "https://atongen.github.io/opixelserv")
 (authors "Andrew Tongen")
 (maintainers "Andrew Tongen <atongen@gmail>")
 (license MIT)
 
 (package
- (name opixelserve)
- (synopsis "Opixelserve!")
- (description "Opixelserve!")
+ (name opixelserv)
+ (synopsis "Opixelserv!")
+ (description "Opixelserv!")
  (depends
   (dune (>= 1.10))
   tls

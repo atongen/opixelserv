@@ -1,4 +1,4 @@
-NAME=opixelserve
+NAME=opixelserv
 VERSION=$(shell cat ${NAME}.opam | egrep '^version: ' | cut -d '"' -f2)
 BUG_REPORTS=$(shell cat ${NAME}.opam | egrep '^bug-reports: ' | cut -d '"' -f2)
 BUILD_TIME=$(shell date -u +"%Y-%m-%d %T")
