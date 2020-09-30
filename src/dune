@@ -2,6 +2,9 @@
  (name opixelserv)
  (public_name opixelserv)
  (modules
+  keystore
+  certgen
+  responses
   my_io
   my_conduit_lwt_unix
   my_server
@@ -9,18 +12,6 @@
  (libraries
   cohttp
   cohttp-lwt-unix
+  lru
   lwt)
- (package opixelserv))
-
-(executable
- (name opixtest)
- (public_name opixtest)
- (modules
-  opixtest
-  responses)
- (libraries
-  tls
-  tls.lwt
-  lwt
-  lwt.unix)
  (package opixelserv))

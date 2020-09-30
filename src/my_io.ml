@@ -41,14 +41,18 @@ let wrap_read f ~if_closed =
   Lwt.catch f
     (function
       | Lwt_io.Channel_closed _ -> Lwt.return if_closed
-      | Unix.Unix_error _ as e -> Lwt.fail (IO_error e)
+      | Unix.Unix_error _ as e ->
+        ignore(print_endline "unix error 1");
+        Lwt.fail (IO_error e)
       | exn -> raise exn
     )
 
 let wrap_write f =
   Lwt.catch f
     (function
-      | Unix.Unix_error _ as e -> Lwt.fail (IO_error e)
+      | Unix.Unix_error _ as e ->
+        ignore(print_endline "unix error 2");
+        Lwt.fail (IO_error e)
       | exn -> raise exn
     )
 

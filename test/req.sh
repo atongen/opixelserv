@@ -5,6 +5,5 @@ host="${1:-www.nice.org}"
 
 curl \
   -I \
-  --request GET \
   --cacert var/cache/pixelserv/ca.crt \
   "https://${host}/index.html"

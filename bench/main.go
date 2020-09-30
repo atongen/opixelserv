@@ -30,10 +30,43 @@ var (
 
 var charSet = "abcdedfghijklmnopqrstuvwxyz"
 
+var exts = []string{
+	".html",
+	".htm",
+	".jpg",
+	".jpeg",
+	".gif",
+	".png",
+	".ico",
+	".js",
+	".swf",
+	".txt",
+}
+
+func makeReqPath() string {
+	switch rand.Intn(6) {
+	default:
+		return ""
+	case 0:
+		return fmt.Sprintf("/%s", randStr(5))
+	case 1:
+		return fmt.Sprintf("/%s/", randStr(6))
+	case 2, 3:
+		return fmt.Sprintf("/%s%s", randStr(7), exts[rand.Intn(len(exts))])
+	case 4:
+		return fmt.Sprintf("/%s/%s%s", randStr(8), randStr(4), exts[rand.Intn(len(exts))])
+	}
+}
+
 func makeHost(domains []string) string {
-	subdomain := randStr(4)
 	domain := domains[rand.Intn(len(domains))]
-	return fmt.Sprintf("https://%s.%s", subdomain, domain)
+	switch rand.Intn(3) {
+	default:
+		return fmt.Sprintf("https://%s", domain)
+	case 0, 1:
+		subdomain := randStr(4)
+		return fmt.Sprintf("https://%s.%s", subdomain, domain)
+	}
 }
 
 func randStr(n int) string {
@@ -97,7 +130,10 @@ func handleRes(res <-chan string) {
 func doReq(client *http.Client, host string, sem <-chan bool, res chan<- string) {
 	defer func() { <-sem }()
 
-	resp, err := client.Get(host)
+	path := makeReqPath()
+	uri := fmt.Sprintf("%s%s", host, path)
+	//fmt.Println(uri)
+	resp, err := client.Get(uri)
 	if err != nil {
 		res <- "GET error"
 		return

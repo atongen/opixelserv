@@ -1,0 +1,12 @@
+val null_gif : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_png : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_jpg : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_ico : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val favicon : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_swf : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_text : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_javascript : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val not_implemented : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val not_found : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val no_content : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val options : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
