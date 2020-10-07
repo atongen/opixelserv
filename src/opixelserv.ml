@@ -1,8 +1,6 @@
 open Cohttp
 open Cohttp_lwt_unix
 
-(*module Server_core = Cohttp_lwt.Make_server (Cohttp_lwt_unix.IO) *)
-
 let base_dir = "/var/cache/pixelserv"
 
 let keystore =
@@ -14,10 +12,10 @@ let get_cert hostname = Keystore.get keystore hostname
 
 let callback _conn req _body =
     let uri = req |> Request.uri |> Uri.to_string |> String.lowercase_ascii in
-    let meth = req |> Request.meth |> Code.string_of_method in
+    let meth = req |> Request.meth in
     let open Responses in
     match meth with
-    | "GET" ->
+    | `GET ->
         let parts = String.split_on_char '/' uri |> Array.of_list in
         let l = Array.length parts in
         if l > 0 then (
@@ -40,14 +38,14 @@ let callback _conn req _body =
                     | _ -> null_text
                 ) else null_text
         ) else null_text
-    | "HEAD" -> null_text (* confirm this *)
-    | "OPTIONS" -> options
-    | "POST" -> null_text
+    | `HEAD -> null_text (* confirm this *)
+    | `OPTIONS -> options
+    | `POST -> null_text
     | _ ->
-        ignore(print_endline @@ "not implemented! " ^ meth);
+        ignore(print_endline @@ "not implemented! " ^ (Code.string_of_method meth));
         not_implemented
 
-let log_on_exn =
+let on_exn =
   function
   | Unix.Unix_error (error, func, arg) ->
      Logs.warn (fun m -> m "Client connection error 1 %s: %s(%S)"
@@ -57,7 +55,7 @@ let log_on_exn =
 let server =
     let mode = `TLS_dynamic (443, get_cert) in
     let ctx = Conduit_lwt_unix.default_ctx in
-    Conduit_lwt_unix.serve ~mode ~ctx ~on_exn:log_on_exn (Server.callback (Cohttp_lwt_unix.Server.make ~callback ()))
+    Conduit_lwt_unix.serve ~mode ~ctx ~on_exn (Server.callback (Cohttp_lwt_unix.Server.make ~callback ()))
 
 let () =
     Lwt.async_exception_hook := (function
