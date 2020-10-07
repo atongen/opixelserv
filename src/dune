@@ -5,9 +5,6 @@
   keystore
   certgen
   responses
-  my_io
-  my_conduit_lwt_unix
-  my_server
   opixelserv)
  (libraries
   cohttp

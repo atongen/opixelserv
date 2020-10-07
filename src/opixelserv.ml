@@ -1,18 +1,16 @@
-(*open Lwt *)
 open Cohttp
+open Cohttp_lwt_unix
 
-module Server_core = Cohttp_lwt.Make_server (My_io)
+(*module Server_core = Cohttp_lwt.Make_server (Cohttp_lwt_unix.IO) *)
 
-let log_on_exn =
-  function
-  | Unix.Unix_error (error, func, arg) ->
-     Logs.warn (fun m -> m "Client connection error 1 %s: %s(%S)"
-       (Unix.error_message error) func arg)
-  | exn -> Logs.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
+let base_dir = "/var/cache/pixelserv"
 
-let create ?timeout ?backlog ?stop ~mode spec =
-  let server = Server_core.callback spec in
-  My_conduit_lwt_unix.serve ?backlog ?timeout ?stop ~mode ~on_exn:log_on_exn ~ctx:My_conduit_lwt_unix.default_ctx server
+let keystore =
+    let cacert_path = base_dir ^ "/ca.crt" in
+    let key_path = base_dir ^ "/ca.key" in
+    Keystore.make ~cacert_path ~key_path ()
+
+let get_cert hostname = Keystore.get keystore hostname
 
 let callback _conn req _body =
     let uri = req |> Request.uri |> Uri.to_string |> String.lowercase_ascii in
@@ -49,13 +47,17 @@ let callback _conn req _body =
         ignore(print_endline @@ "not implemented! " ^ meth);
         not_implemented
 
+let log_on_exn =
+  function
+  | Unix.Unix_error (error, func, arg) ->
+     Logs.warn (fun m -> m "Client connection error 1 %s: %s(%S)"
+       (Unix.error_message error) func arg)
+  | exn -> Logs.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
+
 let server =
-  create ~mode:(`TLS_native (
-    `Crt_file_path "/var/cache/pixelserv/_.pectkwxarp.com",
-    `Key_file_path "/var/cache/pixelserv/_.pectkwxarp.com",
-    `No_password,
-    `Port 443
-  )) (Server_core.make ~callback ())
+    let mode = `TLS_dynamic (443, get_cert) in
+    let ctx = Conduit_lwt_unix.default_ctx in
+    Conduit_lwt_unix.serve ~mode ~ctx ~on_exn:log_on_exn (Server.callback (Cohttp_lwt_unix.Server.make ~callback ()))
 
 let () =
     Lwt.async_exception_hook := (function

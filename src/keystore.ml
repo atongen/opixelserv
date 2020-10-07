@@ -77,11 +77,11 @@ let get x hostname =
     | Ok h -> (
         let ck = Hostname.cache_key h in
         match M.find ck x.store with
-        | Some v -> M.promote ck x.store; v
+        | Some v -> M.promote ck x.store; Ok v
         | None ->
             let names = Hostname.names h in
             let v = Certgen.make ~cacert:x.cacert ~key:x.key ~names () in
             M.add ck v x.store; M.trim x.store;
-            v
+            Ok v
     )
-    | Error err -> failwith ("hostname error: " ^ err)
+    | Error err -> Error ("hostname error: " ^ err)

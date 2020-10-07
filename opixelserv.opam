@@ -19,13 +19,13 @@ description: "Opixelserv!"
 depends: [
   "dune" {>= "1.10"}
   "tls" {= "0.12.5"}
+  "conduit-lwt-unix" {= "2.2.2"}
+  "lwt" {= "5.3.0"}
+  "conf-libev"
   "lru"
   "cmdliner"
   "cohttp-lwt-unix"
-  "containers"
-  "lwt"
   "magic-mime"
-  "nocrypto"
   "ocaml"
   "x509"
   "cstruct"
