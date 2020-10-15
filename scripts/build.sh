@@ -53,7 +53,7 @@ opam install -yq \
   x509.0.11.2 \
   \
   async.v0.14.0 \
-  dns-client.4.6.2 \
+  dns-client.4.4.1 \
   ipaddr.5.0.1 \
   ipaddr-sexp.5.0.1 \
   mirage-flow-combinators.2.0.1 \
