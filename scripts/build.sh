@@ -62,7 +62,4 @@ opam install cohttp-lwt-unix prometheus lru
 # opixelserv
 
 cd "${dir}" || exit 1
-opam pin add -yn opixelserv .
-dune clean
-dune build
-dune install
+opam pin add opixelserv .

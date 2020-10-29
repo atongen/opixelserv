@@ -17,16 +17,8 @@
   (dune (>= 1.10))
   (tls (= 0.12.5))
   (conduit-lwt-unix (= 2.1.0))
-  lwt
-  conf-libev
   lru
   cmdliner
   cohttp-lwt-unix
-  magic-mime
-  ocaml
-  prometheus
-  x509
-  cstruct
-  sexplib
-  ptime)
+  prometheus)
  )
