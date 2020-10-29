@@ -7,8 +7,11 @@
   responses
   opixelserv)
  (libraries
+  cmdliner
   cohttp
   cohttp-lwt-unix
+  prometheus
+  prometheus-app.unix
   lru
   lwt)
  (package opixelserv))

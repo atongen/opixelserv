@@ -20,5 +20,5 @@
   lru
   cmdliner
   cohttp-lwt-unix
-  prometheus)
+  prometheus-app)
  )

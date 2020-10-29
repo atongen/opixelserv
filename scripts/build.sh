@@ -20,7 +20,8 @@ fi
 
 set -e
 
-opam install dune ocaml-syntax-shims depext conf-libev merlin \
+opam install -yq \
+  dune ocaml-syntax-shims depext conf-libev merlin \
   utop ocp-indent ocp-index
 
 # tls
@@ -37,7 +38,7 @@ fi
 
 git pull --ff-only
 
-opam pin add tls.0.12.5 .
+opam pin add -yq tls.0.12.5 .
 
 # conduit
 
@@ -53,13 +54,13 @@ fi
 
 git pull --ff-only
 
-opam pin add conduit-lwt-unix.2.1.0 .
+opam pin add -yq conduit-lwt-unix.2.1.0 .
 
-# misc dependencies
+# dependencies
 
-opam install cohttp-lwt-unix prometheus lru
+opam install -yq cohttp-lwt-unix prometheus-app lru
 
 # opixelserv
 
 cd "${dir}" || exit 1
-opam pin add opixelserv .
+opam pin add -yq opixelserv .
