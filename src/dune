@@ -2,10 +2,11 @@
  (name opixelserv)
  (public_name opixelserv)
  (modules
-  keystore
   certgen
-  responses
-  opixelserv)
+  keystore
+  metrics
+  opixelserv
+  responses)
  (libraries
   cmdliner
   cohttp

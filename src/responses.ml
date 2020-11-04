@@ -16,7 +16,7 @@ let make_response content_type lines =
     let headers = add_list headers [("keep-alive", "true"); ("content-type", content_type)] in
     Cohttp_lwt_unix.Server.respond_string ~status:`OK ~body ~headers ()
 
-let null_gif = make_response "image/gif" [
+let null_gif_content = make_response "image/gif" [
     "GIF89a"; (* header *)
     (Printf.sprintf "%s%s%s%s" c1 c0 c1 c0); (* little endian width, height *)
     "\x80";    (* Global Colour Table flag *)
@@ -41,7 +41,11 @@ let null_gif = make_response "image/gif" [
     ";";  (* GIF file terminator *)
 ]
 
-let null_png = make_response "image/png" [
+let null_gif () =
+    Metrics.inc_request Metrics.Gif;
+    null_gif_content
+
+let null_png_content = make_response "image/png" [
     "\x89";
     "PNG";
     "\r\n";
@@ -62,7 +66,11 @@ let null_png = make_response "image/png" [
     "\xae\x42\x60\x82";  (* CRC *)
 ]
 
-let null_jpg = make_response "image/jpeg" [
+let null_png () =
+    Metrics.inc_request Metrics.Png;
+    null_png_content
+
+let null_jpg_content = make_response "image/jpeg" [
     "\xff\xd8";  (* SOI, Start Of Image *)
     "\xff\xe0";  (* APP0 *)
     "\x00\x10";  (* length of section 16 *)
@@ -105,7 +113,11 @@ let null_jpg = make_response "image/jpeg" [
     "\xff\xd9";  (* EOI, End Of image *)
 ]
 
-let null_ico = make_response "image/x-icon" [
+let null_jpg () =
+    Metrics.inc_request Metrics.Jpg;
+    null_jpg_content
+
+let null_ico_content = make_response "image/x-icon" [
     "\x00\x00"; (* reserved 0 *)
     "\x01\x00"; (* ico *)
     "\x01\x00"; (* 1 image *)
@@ -128,7 +140,11 @@ let null_ico = make_response "image/x-icon" [
     "\x80\xF8\x9C\x41"; (* AND ? *)
 ]
 
-let favicon = make_response "image/x-icon" [
+let null_ico () =
+    Metrics.inc_request Metrics.Ico;
+    null_ico_content
+
+let favicon_content = make_response "image/x-icon" [
     "\x00\x00"; (* reserved 0 *)
     "\x01\x00"; (* ico *)
     "\x01\x00"; (* 1 image *)
@@ -176,7 +192,11 @@ let favicon = make_response "image/x-icon" [
     "\x74\x8d\x76\xe7\x00\x00\x00\x00\x49\x45\x4e\x44\xae\x42\x60\x82";
 ]
 
-let null_swf = make_response "application/x-shockwave-flash" [
+let favicon () =
+    Metrics.inc_request Metrics.Favicon;
+    favicon_content
+
+let null_swf_content = make_response "application/x-shockwave-flash" [
     "FWS";
     "\x05";  (* File version *)
     "\x19\x00\x00\x00";  (* litle endian size 16+9=25 *)
@@ -189,17 +209,49 @@ let null_swf = make_response "application/x-shockwave-flash" [
     "\x00\x00";  (* tag type 0 - end file *)
 ]
 
-let null_text = make_response "text/plain" []
+let null_swf () =
+    Metrics.inc_request Metrics.Swf;
+    null_swf_content
 
-let null_javascript = make_response "application/javascript" ["function{}();"]
+let null_text_content = make_response "text/plain" []
 
-let not_implemented = Cohttp_lwt_unix.Server.respond_string ~status:`Not_implemented ~body:"" ()
-let not_found = Cohttp_lwt_unix.Server.respond_string ~status:`Not_found ~body:"" ()
-let no_content = Cohttp_lwt_unix.Server.respond_string ~status:`No_content ~body:"" ()
+let null_text () =
+    Metrics.inc_request Metrics.Text;
+    null_text_content
 
-let options =
+let null_javascript_content = make_response "application/javascript" ["function{}();"]
+
+let null_javascript () =
+    Metrics.inc_request Metrics.Javascript;
+    null_javascript_content
+
+let not_implemented_content = Cohttp_lwt_unix.Server.respond_string ~status:`Not_implemented ~body:"" ()
+
+let not_implemented () =
+    Metrics.inc_request Metrics.Not_Implemented;
+    not_implemented_content
+
+
+let not_found_content = Cohttp_lwt_unix.Server.respond_string ~status:`Not_found ~body:"" ()
+
+let not_found () =
+    Metrics.inc_request Metrics.Not_Found;
+    not_found_content
+
+
+let no_content_content = Cohttp_lwt_unix.Server.respond_string ~status:`No_content ~body:"" ()
+
+let no_content () =
+    Metrics.inc_request Metrics.No_Content;
+    no_content_content
+
+let options_content =
     let c = "GET,HEAD,OPTIONS" in
     let open Cohttp.Header in
     let headers = init () in
     let headers = add_list headers [("allow", c); ("content-type", "text/html")] in
     Cohttp_lwt_unix.Server.respond_string ~status:`OK ~body:c ~headers ()
+
+let options () =
+    Metrics.inc_request Metrics.Options;
+    options_content

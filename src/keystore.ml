@@ -69,7 +69,6 @@ module Hostname = struct
     let names = function
         | OnePart s -> [s]
         | TwoParts s -> ["*." ^ s; s]
-
 end
 
 let get x hostname =
@@ -77,8 +76,12 @@ let get x hostname =
     | Ok h -> (
         let ck = Hostname.cache_key h in
         match M.find ck x.store with
-        | Some v -> M.promote ck x.store; Ok v
+        | Some v ->
+            Metrics.inc_keystore_get ck Metrics.Hit;
+            M.promote ck x.store;
+            Ok v
         | None ->
+            Metrics.inc_keystore_get ck Metrics.Miss;
             let names = Hostname.names h in
             let v = Certgen.make ~cacert:x.cacert ~key:x.key ~names () in
             M.add ck v x.store; M.trim x.store;
