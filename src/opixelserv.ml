@@ -63,12 +63,20 @@ let make_server_https port cacert_path key_path lru_size =
 
 let make_prometheus_server config = Prometheus_unix.serve config
 
-let main http_port https_port cacert_path key_path lru_size prometheus_config =
+let main_server http_port https_port cacert_path key_path lru_size prometheus_config =
     let server_http = make_server_http http_port in
     let server_https = make_server_https https_port cacert_path key_path lru_size in
     let prometheus_server = make_prometheus_server prometheus_config in
     let threads = List.concat [[server_http; server_https]; prometheus_server] in
     Lwt_main.run (Lwt.choose threads)
+
+let main http_port https_port cacert_path key_path lru_size prometheus_config gen_ca =
+    if gen_ca then
+        match (Certgen.gen_ca ~cacert_path ~key_path ~name:"opixelserv" ()) with
+        | Ok () -> ()
+        | Error msg -> ignore(print_endline msg)
+    else
+        main_server http_port https_port cacert_path key_path lru_size prometheus_config
 
 open Cmdliner
 
@@ -83,17 +91,21 @@ let () =
     in
     let cacert_path =
         let doc = "Path to CA cert" in
-        Arg.(value & opt string "/var/cache/pixelserv/ca.crt" & info ["c"; "cacert-path"] ~docv:"CACERT_PATH" ~doc)
+        Arg.(value & opt string "./ca.crt" & info ["c"; "cacert-path"] ~docv:"CACERT_PATH" ~doc)
     in
     let key_path =
         let doc = "Path to key" in
-        Arg.(value & opt string "/var/cache/pixelserv/ca.key" & info ["k"; "key-path"] ~docv:"KEY_PATH" ~doc)
+        Arg.(value & opt string "./ca.key" & info ["k"; "key-path"] ~docv:"KEY_PATH" ~doc)
     in
     let lru_size =
         let doc = "Size of LRU cache for key and certificate data" in
         Arg.(value & opt int 1024 & info ["l"; "lru-size"] ~docv:"LRU_SIZE" ~doc)
     in
-    let spec = Term.(const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts) in
+    let gen_ca =
+        let doc = "Generate CA key and certificate" in
+        Arg.(value & opt bool false & info ["g"; "gen-ca"] ~docv:"GEN_CA" ~doc)
+    in
+    let spec = Term.(const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca) in
     let info = Term.info "opixelserv" in
     match Term.eval (spec, info) with
     | `Error _ -> exit 1

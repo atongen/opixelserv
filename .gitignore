@@ -9,3 +9,5 @@ opixelserve.install
 /lib
 /.vscode
 /test/tmp/
+/ca.crt
+/ca.key

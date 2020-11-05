@@ -56,3 +56,31 @@ let make ?(bits=2048) ~key ~cacert ~names () : Tls.Config.certchain =
     match sign (`RSA key) pubkey issuer csr names `Server with
     | Error _str -> failwith "failed to make cert!"
     | Ok cert -> ([cert], privkey)
+
+let write_pem dest pem =
+  try
+    let fd = Unix.openfile dest [Unix.O_WRONLY; Unix.O_CREAT] 0o600 in
+    (* single_write promises either complete failure (resulting in an exception)
+         or complete success, so disregard the returned number of bytes written
+         and just handle the exceptions *)
+    let _written_bytes = Unix.single_write fd (Cstruct.to_bytes pem) 0 (Cstruct.len pem) in
+    let () = Unix.close fd in
+    Ok ()
+  with
+  | Unix.Unix_error (_e, _, _) -> failwith "failed to write pem!"
+
+let gen_ca ?(bits=2048) ?(days=3650) ~cacert_path ~key_path ~name () =
+  let privkey = Mirage_crypto_pk.Rsa.generate ~bits ()
+  and issuer =
+    [ X509.Distinguished_name.(Relative_distinguished_name.singleton (CN name)) ]
+  in
+  let csr = X509.Signing_request.create issuer (`RSA privkey) in
+  match sign ~days (`RSA privkey) (`RSA (Mirage_crypto_pk.Rsa.pub_of_priv privkey)) issuer csr [] `CA with
+  | Ok cert ->
+     let cert_pem = X509.Certificate.encode_pem cert in
+     let key_pem = X509.Private_key.encode_pem (`RSA privkey) in
+     (match write_pem cacert_path cert_pem, write_pem key_path key_pem with
+      | Ok (), Ok () -> Ok ()
+      | Error _str, _
+      | _, Error _str -> Error "gen_ca failed!")
+  | Error _str -> Error "sign gen_ca failed!"
