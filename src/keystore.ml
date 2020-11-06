@@ -79,21 +79,21 @@ let get x hostname =
         let ck = Hostname.cache_key h in
         match M.find ck x.store with
         | Some v ->
-            Metrics.inc_keystore_get ck Metrics.Hit;
+            Metrics.inc_keystore_get Metrics.Hit;
             M.promote ck x.store;
             Ok v
         | None ->
             let names = Hostname.names h in
             match Certgen.make ~cacert:x.cacert ~key:x.key ~names () with
             | Ok v ->
-                Metrics.inc_keystore_get ck Metrics.Miss;
+                Metrics.inc_keystore_get Metrics.Miss;
                 M.add ck v x.store;
                 M.trim x.store;
                 Ok v
             | Error (`Msg str) ->
-                Metrics.inc_keystore_get ck Metrics.Error;
+                Metrics.inc_keystore_get Metrics.Error;
                 Error str
     )
     | Error err ->
-        Metrics.inc_keystore_get "host" Metrics.Error;
+        Metrics.inc_keystore_get Metrics.Error;
         Error ("hostname error: " ^ err)

@@ -14,8 +14,8 @@ type request_type =
     | Swf
     | Text
 
-val inc_keystore_get : string -> cache_status -> unit
+val inc_keystore_get : cache_status -> unit
 
-val inc_unknown_extension : string -> unit
+val inc_unknown_extension : unit -> unit
 
 val inc_request : request_type -> unit

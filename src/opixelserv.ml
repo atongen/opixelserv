@@ -1,4 +1,3 @@
-open Cohttp
 open Cohttp_lwt_unix
 
 let callback _conn req _body =
@@ -28,8 +27,8 @@ let callback _conn req _body =
             | Some "ico" -> null_ico ()
             | Some "js" -> null_javascript ()
             | Some "swf" -> null_swf ()
-            | Some ext ->
-                Metrics.inc_unknown_extension ext;
+            | Some _ ->
+                Metrics.inc_unknown_extension ();
                 null_text ()
             | None -> null_text ()
         )
@@ -38,9 +37,7 @@ let callback _conn req _body =
     | `HEAD -> null_text () (* confirm this *)
     | `OPTIONS -> options ()
     | `POST -> null_text ()
-    | _ ->
-        print_endline @@ "not implemented! " ^ (Code.string_of_method meth);
-        not_implemented ()
+    | _ -> not_implemented ()
 
 let on_exn =
   function

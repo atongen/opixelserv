@@ -20,11 +20,11 @@ import (
 
 // cli flags
 var (
-	rFlag = flag.Int("r", 100000, "num requests")
-	dFlag = flag.Int("d", 0, "num domains")
+	rFlag = flag.Int("r", 10000, "num requests")
+	dFlag = flag.Int("d", 100, "num domains")
 	lFlag = flag.String("l", "", "list domains")
 	wFlag = flag.Int("w", runtime.NumCPU(), "num workers")
-	cFlag = flag.String("c", "/var/cache/pixelserv/ca.crt", "ca cert path")
+	cFlag = flag.String("c", "./ca.crt", "ca cert path")
 	pFlag = flag.String("p", "127.0.0.1", "pixelserve ip address")
 )
 
@@ -41,6 +41,8 @@ var exts = []string{
 	".js",
 	".swf",
 	".txt",
+	".gz",
+	".wow",
 }
 
 func makeReqPath() string {
@@ -60,12 +62,15 @@ func makeReqPath() string {
 
 func makeHost(domains []string) string {
 	domain := domains[rand.Intn(len(domains))]
-	switch rand.Intn(3) {
-	default:
+	val := rand.Intn(20)
+	if val >= 0 && val < 5 {
 		return fmt.Sprintf("https://%s", domain)
-	case 0, 1:
+	} else if val >= 5 && val < 19 {
 		subdomain := randStr(4)
 		return fmt.Sprintf("https://%s.%s", subdomain, domain)
+	} else {
+		subdomain := randStr(4)
+		return fmt.Sprintf("http://%s.%s", subdomain, domain)
 	}
 }
 
