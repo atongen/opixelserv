@@ -7,11 +7,12 @@ let keystore_get_total =
     let help = "Total number of keystore gets by host and cache status" in
     Counter.v_labels ~help ~namespace ~subsystem ~label_names:["hostname"; "status"] "keystore_gets_total"
 
-type cache_status = Hit | Miss
+type cache_status = Hit | Miss | Error
 
 let string_of_status = function
     | Hit -> "hit"
     | Miss -> "miss"
+    | Error -> "error"
 
 let inc_keystore_get host status =
     let m = Counter.labels keystore_get_total [host; string_of_status status] in

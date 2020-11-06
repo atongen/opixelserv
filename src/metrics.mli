@@ -1,4 +1,4 @@
-type cache_status = Hit | Miss
+type cache_status = Hit | Miss | Error
 
 type request_type =
     | Favicon

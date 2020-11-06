@@ -6,9 +6,11 @@ end
 
 module I = struct
     type t = Tls.Config.certchain
+    (*
     let compare (a: Tls.Config.certchain) b = compare a b
     let equal (a: Tls.Config.certchain) b = a = b
     let hash (i: Tls.Config.certchain) = Hashtbl.hash i
+    *)
     let weight _ = 1
 end
 
@@ -81,10 +83,17 @@ let get x hostname =
             M.promote ck x.store;
             Ok v
         | None ->
-            Metrics.inc_keystore_get ck Metrics.Miss;
             let names = Hostname.names h in
-            let v = Certgen.make ~cacert:x.cacert ~key:x.key ~names () in
-            M.add ck v x.store; M.trim x.store;
-            Ok v
+            match Certgen.make ~cacert:x.cacert ~key:x.key ~names () with
+            | Ok v ->
+                Metrics.inc_keystore_get ck Metrics.Miss;
+                M.add ck v x.store;
+                M.trim x.store;
+                Ok v
+            | Error (`Msg str) ->
+                Metrics.inc_keystore_get ck Metrics.Error;
+                Error str
     )
-    | Error err -> Error ("hostname error: " ^ err)
+    | Error err ->
+        Metrics.inc_keystore_get "host" Metrics.Error;
+        Error ("hostname error: " ^ err)

@@ -74,7 +74,7 @@ let main http_port https_port cacert_path key_path lru_size prometheus_config ge
     if gen_ca then
         match (Certgen.gen_ca ~cacert_path ~key_path ~name:"opixelserv" ()) with
         | Ok () -> ()
-        | Error msg -> ignore(print_endline msg)
+        | Error (`Msg msg) -> failwith msg
     else
         main_server http_port https_port cacert_path key_path lru_size prometheus_config
 
@@ -103,7 +103,7 @@ let () =
     in
     let gen_ca =
         let doc = "Generate CA key and certificate" in
-        Arg.(value & opt bool false & info ["g"; "gen-ca"] ~docv:"GEN_CA" ~doc)
+        Arg.(value & flag & info ["g"; "gen-ca"] ~docv:"GEN_CA" ~doc)
     in
     let spec = Term.(const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca) in
     let info = Term.info "opixelserv" in
