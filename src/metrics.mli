@@ -1,6 +1,9 @@
 type cache_status = Hit | Miss | Error
 
+val inc_keystore_get : cache_status -> unit
+
 type request_type =
+    | Certificate
     | Favicon
     | Gif
     | Ico
@@ -15,8 +18,6 @@ type request_type =
     | Swf
     | Text
 
-val inc_keystore_get : cache_status -> unit
+val inc_request : bool -> Cohttp.Code.meth -> request_type -> unit
 
-val inc_unknown_extension : unit -> unit
-
-val inc_request : request_type -> unit
+val inc_error : unit -> unit

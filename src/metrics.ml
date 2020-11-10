@@ -16,14 +16,8 @@ let string_of_status = function
 let inc_keystore_get status =
     Counter.inc_one (keystore_get_total (string_of_status status))
 
-let unknown_extension_total =
-    let help = "Total number of requests for unknown extensions" in
-    Counter.v ~help ~namespace ~subsystem:"web" "unknown_extension"
-
-let inc_unknown_extension () =
-    Counter.inc_one unknown_extension_total
-
 type request_type =
+    | Certificate
     | Favicon
     | Gif
     | Ico
@@ -39,6 +33,7 @@ type request_type =
     | Text
 
 let string_of_request_type = function
+    | Certificate -> "certificate"
     | Favicon -> "favicon"
     | Gif -> "gif"
     | Ico -> "ico"
@@ -55,7 +50,17 @@ let string_of_request_type = function
 
 let request_total =
     let help = "Total number of requests by type" in
-    Counter.v_label ~help ~namespace ~subsystem:"web" ~label_name:"type" "request_total"
+    Counter.v_labels ~help ~namespace ~subsystem:"web" ~label_names:["mode"; "method"; "type"] "request_total"
 
-let inc_request req_type =
-    Counter.inc_one (request_total (string_of_request_type req_type))
+let inc_request is_encrypted meth req_type =
+    let mode = (if is_encrypted then "tls" else "tcp") in
+    let meth_str = meth |> Cohttp.Code.string_of_method in
+    let req_type_str = string_of_request_type req_type in
+    let m = Counter.labels request_total [mode; meth_str; req_type_str] in
+    Counter.inc_one m
+
+let error_total =
+    let help = "Total number of errors" in
+    Counter.v ~help ~namespace ~subsystem:"web" "error_total"
+
+let inc_error () = Counter.inc_one error_total
