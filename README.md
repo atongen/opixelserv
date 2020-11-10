@@ -2,6 +2,18 @@
 
 pure ocaml alternative to pixelserve-tls
 
+## building
+
+Dependencies on FreeBSD (tested on version 12):
+* git
+* gmake
+* libev
+* pkgconf
+
+```
+$ scripts/build.sh
+```
+
 ## reference
 
 * https://ma.ttias.be/how-to-read-ssl-certificate-info-from-the-cli/

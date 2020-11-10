@@ -14,5 +14,9 @@
   prometheus
   prometheus-app.unix
   lru
+  logs.cli
+  logs.fmt
+  fmt.cli
+  fmt.tty
   lwt)
  (package opixelserv))

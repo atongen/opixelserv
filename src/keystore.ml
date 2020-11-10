@@ -6,11 +6,6 @@ end
 
 module I = struct
     type t = Tls.Config.certchain
-    (*
-    let compare (a: Tls.Config.certchain) b = compare a b
-    let equal (a: Tls.Config.certchain) b = a = b
-    let hash (i: Tls.Config.certchain) = Hashtbl.hash i
-    *)
     let weight _ = 1
 end
 
@@ -79,6 +74,7 @@ let get x hostname =
         let ck = Hostname.cache_key h in
         match M.find ck x.store with
         | Some v ->
+            Logs.info (fun m -> m "keystore: HIT %s" ck);
             Metrics.inc_keystore_get Metrics.Hit;
             M.promote ck x.store;
             Ok v
@@ -86,14 +82,17 @@ let get x hostname =
             let names = Hostname.names h in
             match Certgen.make ~cacert:x.cacert ~key:x.key ~names () with
             | Ok v ->
+                Logs.info (fun m -> m "keystore: MISS %s" ck);
                 Metrics.inc_keystore_get Metrics.Miss;
                 M.add ck v x.store;
                 M.trim x.store;
                 Ok v
             | Error (`Msg str) ->
+                Logs.info (fun m -> m "keystore: ERR %s: %s" ck str);
                 Metrics.inc_keystore_get Metrics.Error;
                 Error str
     )
     | Error err ->
+        Logs.info (fun m -> m "keystore: ERR hostname: %s" err);
         Metrics.inc_keystore_get Metrics.Error;
         Error ("hostname error: " ^ err)

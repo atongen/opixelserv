@@ -1,8 +1,8 @@
 open Cohttp_lwt_unix
 
 let callback _conn req _body =
-    let get_last uri =
-        let parts = String.split_on_char '/' uri |> Array.of_list in
+    let get_last path =
+        let parts = String.split_on_char '/' path |> Array.of_list in
         let l = Array.length parts in
         if l > 0 then Some parts.(l-1) else None
     in
@@ -11,33 +11,63 @@ let callback _conn req _body =
         let ext_l = Array.length ext_list in
         if ext_l > 0 then Some (ext_list.(ext_l-1)) else None
     in
-    let uri = req |> Request.uri |> Uri.path |> String.lowercase_ascii in
+    let path = req |> Request.uri |> Uri.path |> String.lowercase_ascii in
     let meth = req |> Request.meth in
+    Logs.info (fun m -> m "web: %s %s" (Cohttp.Code.string_of_method meth) (req |> Request.uri |> Uri.to_string));
     let open Responses in
+    let open Metrics in
     match meth with
     | `GET -> (
-        match get_last uri with
-        | Some "favicon.ico" -> favicon ()
-        | Some "generate_204" -> no_content ()
+        match get_last path with
+        | Some "favicon.ico" ->
+            inc_request Favicon;
+            favicon
+        | Some "generate_204" ->
+            inc_request No_content;
+            no_content
         | Some last -> (
             match get_ext last with
-            | Some "jpg" | Some "jpeg" -> null_jpg ()
-            | Some "gif" -> null_gif ()
-            | Some "png" -> null_png ()
-            | Some "ico" -> null_ico ()
-            | Some "js" -> null_javascript ()
-            | Some "swf" -> null_swf ()
+            | Some "jpg" | Some "jpeg" ->
+                inc_request Jpg;
+                null_jpg
+            | Some "gif" ->
+                inc_request Gif;
+                null_gif
+            | Some "png" ->
+                inc_request Png;
+                null_png
+            | Some "ico" ->
+                inc_request Ico;
+                null_ico
+            | Some "js" ->
+                inc_request Javascript;
+                null_javascript
+            | Some "json" ->
+                inc_request Json;
+                null_json
+            | Some "swf" ->
+                inc_request Swf;
+                null_swf
             | Some _ ->
-                Metrics.inc_unknown_extension ();
-                null_text ()
-            | None -> null_text ()
+                inc_unknown_extension ();
+                null_text
+            | None ->
+                inc_request Text;
+                null_text
         )
-        | None -> null_text ()
+        | None ->
+            inc_request Text;
+            null_text
     )
-    | `HEAD -> null_text () (* confirm this *)
-    | `OPTIONS -> options ()
-    | `POST -> null_text ()
-    | _ -> not_implemented ()
+    | `HEAD | `POST ->
+        inc_request Text;
+        null_text
+    | `OPTIONS ->
+        inc_request Options;
+        options
+    | _ ->
+        inc_request Not_implemented;
+        not_implemented
 
 let on_exn =
   function
@@ -67,7 +97,7 @@ let main_server http_port https_port cacert_path key_path lru_size prometheus_co
     let threads = List.concat [[server_http; server_https]; prometheus_server] in
     Lwt_main.run (Lwt.choose threads)
 
-let main http_port https_port cacert_path key_path lru_size prometheus_config gen_ca =
+let main http_port https_port cacert_path key_path lru_size prometheus_config gen_ca () =
     if gen_ca then
         match (Certgen.gen_ca ~cacert_path ~key_path ~name:"opixelserv" ()) with
         | Ok () -> ()
@@ -75,7 +105,16 @@ let main http_port https_port cacert_path key_path lru_size prometheus_config ge
     else
         main_server http_port https_port cacert_path key_path lru_size prometheus_config
 
+let setup_log style_renderer level =
+  Fmt_tty.setup_std_outputs ?style_renderer ();
+  Logs.set_level level;
+  Logs.set_reporter (Logs_fmt.reporter ());
+  ()
+
 open Cmdliner
+
+let setup_log =
+  Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
 
 let () =
     let http_port =
@@ -102,7 +141,9 @@ let () =
         let doc = "Generate CA key and certificate" in
         Arg.(value & flag & info ["g"; "gen-ca"] ~docv:"GEN_CA" ~doc)
     in
-    let spec = Term.(const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca) in
+    let spec = Term.(
+        const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca $ setup_log
+    ) in
     let info = Term.info "opixelserv" in
     match Term.eval (spec, info) with
     | `Error _ -> exit 1

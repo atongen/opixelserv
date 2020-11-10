@@ -1,12 +1,13 @@
-val null_gif : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val null_png : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val null_jpg : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val null_ico : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val favicon : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val null_swf : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val null_text : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val null_javascript : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val not_implemented : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val not_found : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val no_content : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
-val options : unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_gif : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_png : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_jpg : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_ico : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val favicon : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_swf : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_text : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_javascript : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val null_json : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val not_implemented : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val not_found : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val no_content : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+val options : (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t

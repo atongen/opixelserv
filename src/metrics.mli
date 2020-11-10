@@ -6,9 +6,10 @@ type request_type =
     | Ico
     | Javascript
     | Jpg
-    | No_Content
-    | Not_Found
-    | Not_Implemented
+    | Json
+    | No_content
+    | Not_found
+    | Not_implemented
     | Options
     | Png
     | Swf
