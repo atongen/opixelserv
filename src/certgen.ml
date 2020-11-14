@@ -89,9 +89,7 @@ let write_pem dest pem =
 
 let gen_ca ?(bits=2048) ?(days=3650) ~cacert_path ~key_path ~name () =
   let privkey = Mirage_crypto_pk.Rsa.generate ~bits ()
-  and issuer =
-    [ X509.Distinguished_name.(Relative_distinguished_name.singleton (CN name)) ]
-  in
+  and issuer = [ X509.Distinguished_name.(Relative_distinguished_name.singleton (CN name))] in
   let csr = X509.Signing_request.create issuer (`RSA privkey) in
   match sign ~days (`RSA privkey) (`RSA (Mirage_crypto_pk.Rsa.pub_of_priv privkey)) issuer csr [] `CA with
   | Ok cert ->

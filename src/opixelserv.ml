@@ -1,14 +1,13 @@
 open Cohttp_lwt_unix
 
-let get_last path =
-    let parts = String.split_on_char '/' path |> Array.of_list in
-    let l = Array.length parts in
-    if l > 0 then Some parts.(l-1) else None
+let hd_opt = function
+    | [] -> None
+    | [x] -> Some x
+    | hd :: _tl -> Some hd
 
-let get_ext part =
-    let ext_list = String.split_on_char '.' part |> Array.of_list in
-    let ext_l = Array.length ext_list in
-    if ext_l > 0 then Some (ext_list.(ext_l-1)) else None
+let last_delim s d = String.split_on_char d s |> List.rev |> hd_opt
+
+let get_last path = last_delim path '/'
 
 let make_callback is_encrypted cacert_path =
     fun _conn req _body ->
@@ -22,7 +21,7 @@ let make_callback is_encrypted cacert_path =
             if path = "/ca.crt" then (
                 inc_request is_encrypted meth Certificate;
                 Cohttp_lwt_unix.Server.respond_file ~fname:cacert_path ()
-            ) else match get_last path with
+            ) else match last_delim path '/' with
             | Some "favicon.ico" ->
                 inc_request is_encrypted meth Favicon;
                 favicon
@@ -30,7 +29,7 @@ let make_callback is_encrypted cacert_path =
                 inc_request is_encrypted meth No_content;
                 no_content
             | Some last -> (
-                match get_ext last with
+                match last_delim last '.' with
                 | Some "jpg" | Some "jpeg" ->
                     inc_request is_encrypted meth Jpg;
                     null_jpg
@@ -52,7 +51,8 @@ let make_callback is_encrypted cacert_path =
                 | Some "swf" ->
                     inc_request is_encrypted meth Swf;
                     null_swf
-                | Some _ ->
+                | Some ext ->
+                    Logs.info (fun m -> m "Unhandled extension: %s" ext);
                     inc_request is_encrypted meth Text;
                     null_text
                 | None ->
@@ -70,37 +70,31 @@ let make_callback is_encrypted cacert_path =
             inc_request is_encrypted meth Options;
             options
         | _ ->
+            Logs.info (fun m -> m "Unhandled method: %s" (Cohttp.Code.string_of_method meth));
             inc_request is_encrypted meth Not_implemented;
             not_implemented
-
-(*
-let on_exn_old = function
-    | Unix.Unix_error (error, func, arg) ->
-        Metrics.inc_error ();
-        Logs.warn (fun m -> m "Client connection error %s: %s(%S)" (Unix.error_message error) func arg)
-    | exn ->
-        Metrics.inc_error ();
-        Logs.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
-*)
 
 let on_exn exn =
     let err_msg = Printexc.to_string exn in
     Metrics.inc_error err_msg;
-    Logs.err (fun m -> m "Exception: %s" err_msg)
+    Logs.warn (fun m -> m "Exception: %s" err_msg)
 
 let ctx = Conduit_lwt_unix.default_ctx
+
+let make_server mode callback =
+    Conduit_lwt_unix.serve ~mode ~ctx ~on_exn (Server.callback (Cohttp_lwt_unix.Server.make ~callback ()))
 
 let make_server_http port cacert_path =
     let mode = `TCP (`Port port) in
     let callback = make_callback false cacert_path in
-    Conduit_lwt_unix.serve ~mode ~ctx ~on_exn (Server.callback (Cohttp_lwt_unix.Server.make ~callback ()))
+    make_server mode callback
 
 let make_server_https port cacert_path key_path lru_size =
     let keystore = Keystore.make ~size:lru_size ~cacert_path ~key_path  () in
     let get_cert hostname = Keystore.get keystore hostname in
     let mode = `TLS_dynamic (port, get_cert) in
     let callback = make_callback true cacert_path in
-    Conduit_lwt_unix.serve ~mode ~ctx ~on_exn (Server.callback (Cohttp_lwt_unix.Server.make ~callback ()))
+    make_server mode callback
 
 let make_prometheus_server config = Prometheus_unix.serve config
 
@@ -111,9 +105,9 @@ let main_server http_port https_port cacert_path key_path lru_size prometheus_co
     let threads = List.concat [[server_http; server_https]; prometheus_server] in
     Lwt_main.run (Lwt.choose threads)
 
-let main http_port https_port cacert_path key_path lru_size prometheus_config gen_ca () =
+let main http_port https_port cacert_path key_path lru_size prometheus_config gen_ca ca_name () =
     if gen_ca then
-        match (Certgen.gen_ca ~cacert_path ~key_path ~name:"opixelserv" ()) with
+        match (Certgen.gen_ca ~cacert_path ~key_path ~name:ca_name ()) with
         | Ok () -> ()
         | Error (`Msg msg) -> failwith msg
     else
@@ -155,8 +149,12 @@ let () =
         let doc = "Generate CA key and certificate" in
         Arg.(value & flag & info ["g"; "gen-ca"] ~docv:"GEN_CA" ~doc)
     in
+    let ca_name =
+        let doc = "Name of CA when generating key and certificate" in
+        Arg.(value & opt string "opixelserv" & info ["n"; "ca-name"] ~docv:"CA_NAME" ~doc)
+    in
     let spec = Term.(
-        const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca $ setup_log
+        const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca $ ca_name $ setup_log
     ) in
     let info = Term.info "opixelserv" in
     match Term.eval (spec, info) with
