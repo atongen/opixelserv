@@ -20,4 +20,4 @@ type request_type =
 
 val inc_request : bool -> Cohttp.Code.meth -> request_type -> unit
 
-val inc_error : unit -> unit
+val inc_error : string -> unit

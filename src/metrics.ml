@@ -61,6 +61,6 @@ let inc_request is_encrypted meth req_type =
 
 let error_total =
     let help = "Total number of errors" in
-    Counter.v ~help ~namespace ~subsystem:"web" "error_total"
+    Counter.v_label ~help ~namespace ~label_name:"msg" ~subsystem:"web" "error_total"
 
-let inc_error () = Counter.inc_one error_total
+let inc_error err_msg = Counter.inc_one (error_total err_msg)

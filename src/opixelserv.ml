@@ -73,13 +73,20 @@ let make_callback is_encrypted cacert_path =
             inc_request is_encrypted meth Not_implemented;
             not_implemented
 
-let on_exn = function
+(*
+let on_exn_old = function
     | Unix.Unix_error (error, func, arg) ->
         Metrics.inc_error ();
         Logs.warn (fun m -> m "Client connection error %s: %s(%S)" (Unix.error_message error) func arg)
     | exn ->
         Metrics.inc_error ();
         Logs.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
+*)
+
+let on_exn exn =
+    let err_msg = Printexc.to_string exn in
+    Metrics.inc_error err_msg;
+    Logs.err (fun m -> m "Exception: %s" err_msg)
 
 let ctx = Conduit_lwt_unix.default_ctx
 
