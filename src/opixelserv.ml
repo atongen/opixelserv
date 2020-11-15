@@ -156,7 +156,11 @@ let () =
     let spec = Term.(
         const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca $ ca_name $ setup_log
     ) in
-    let info = Term.info "opixelserv" in
+    let build_info = Info.get () in
+    let info =
+        let doc = "A http and https null content server" in
+        Term.info "opixelserv" ~version:build_info.version ~doc
+    in
     match Term.eval (spec, info) with
     | `Error _ -> exit 1
     | _ -> exit 0
