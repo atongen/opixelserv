@@ -158,8 +158,20 @@ let () =
     ) in
     let build_info = Info.get () in
     let info =
-        let doc = "A http and https null content server" in
-        Term.info "opixelserv" ~version:build_info.version ~doc
+        let doc = "A small http and https null content server written in ocaml" in
+        let man = [
+            `S Manpage.s_description;
+            `P (Printf.sprintf "version: %s" build_info.version);
+            `P (Printf.sprintf "build time: %s" build_info.build_time);
+            `P (Printf.sprintf "build hash: %s" build_info.build_hash);
+            `P (Printf.sprintf "ocaml version: %s" build_info.ocaml_version);
+            `P (Printf.sprintf "tls hash: %s" build_info.tls_hash);
+            `P (Printf.sprintf "conduit hash: %s" build_info.conduit_hash);
+            `S Manpage.s_bugs;
+            `P (Printf.sprintf "Report bugs at %s" build_info.bug_reports) ]
+        in
+        let version = Info.to_string build_info in
+        Term.info "opixelserv" ~version ~doc ~man
     in
     match Term.eval (spec, info) with
     | `Error _ -> exit 1
