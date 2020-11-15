@@ -14,6 +14,8 @@ function finish {
 }
 trap finish EXIT
 
+set -e
+
 version=$(grep -E '^version: ' "${name}.opam" | cut -d '"' -f2)
 bug_reports=$(grep -E '^bug-reports: ' "${name}.opam" | cut -d '"' -f2)
 build_time=$(date -u +"%Y-%m-%d %T")

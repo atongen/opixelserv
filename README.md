@@ -1,31 +1,72 @@
 # opixelserv
 
-pure ocaml alternative to pixelserve-tls
+A small http and https null content server written in ocaml.
+
+It can be used as an alternative to [pixelserve-tls](https://github.com/kvic-z/pixelserv-tls).
+
+Optionally exports prometheus metrics on a configurable port.
+
+I run this service in a FreeBSD 12 jail on my [TrueNAS](https://www.truenas.com/) server, so that's what this documentation will reflect.
 
 ## building
 
+On FreeBSD, you'll need to install these package dependencies:
 Dependencies on FreeBSD (tested on version 12):
+
+* ocaml-opam
 * git
 * gmake
 * libev
 * pkgconf
 
+Then to actually build, run:
+
 ```
-$ scripts/build.sh
+# scripts/build.sh
 ```
 
-## reference
+NOTE: This will checkout forked versions of [ocaml-tls](https://github.com/mirleft/ocaml-tls) and [ocaml-conduit](https://github.com/mirage/ocaml-conduit/).
 
-* https://ma.ttias.be/how-to-read-ssl-certificate-info-from-the-cli/
-* https://github.com/mirage/ocaml-conduit/blob/master/lwt-unix/conduit_lwt_server.ml#L74
-* https://tools.ietf.org/html/rfc6066
-* https://github.com/mirage/ocaml-conduit/blob/cf50afcabffb54afb8b51040333025cf652ba3e0/lwt-unix/conduit_lwt_unix.ml#L325
-* https://mirage.io/blog/introducing-x509
-* https://github.com/mirleft/ocaml-x509/blob/cdea2b1ae222e88a403f2d8f954a6aa31c984941/lib/x509.ml
-* https://github.com/mirleft/ocaml-tls/blob/master/lwt/tls_lwt.ml
-* https://mirleft.github.io/ocaml-tls/doc/tls/Tls/Config/index.html#type-own_cert
-* https://github.com/yomimono/ocaml-certify/blob/primary/src/selfsign.ml
-* https://pqwy.github.io/lru/doc/lru/Lru/M/module-type-S/index.html
-* https://mirage.io/blog/why-ocaml-tls
-* https://github.com/kvic-z/pixelserv-tls/
-* https://serverascode.com/2017/07/28/easy-rsa.html
+Which should result in an executable at `bin/opixelserv` (which is actually a soft link to `_build/default/src/opixelserv.exe`).
+
+## running
+
+Here's an example of how to run opixelserv on FreeBSD 12.
+
+It assumes that the executable is either built successfully from the previous step, or the release is downloaded and copied locally to `/usr/local/bin`.
+
+First, generate the CA key and certificate if you don't already have one that you want to use.
+
+```
+# opixelserv -g
+```
+
+If all goes well you will have a new CA key and at `./ca.key` and `./ca.crt`.
+
+```
+# mkdir -p /var/cache/pixelserv
+# mv ca.key ca.crt /var/cache/pixelserv
+```
+
+Now copy the service file template into the correct location:
+
+```
+# cp scripts/service.freebsd /usr/local/etc/rc.d/opixelserv
+```
+
+Add add these lines to `/etc/rc.conf`:
+
+```
+opixelserv_enable="YES"
+opixelserv_flags="--listen-prometheus=9110 --cacert-path=/var/cache/pixelserv/ca.crt --key-path=/var/cache/pixelserv/ca.key --lru-size=4096 --verbosity=info"
+```
+Adjust the flags as necessary. Consult `opixelserv --help` if necessary.
+
+Finally, start the service:
+```
+# service opixelserv start
+```
+
+The CA certificate will be served at `/ca.crt` via http and https for client installation on your network.
+
+All generated keys and certificates are stored in an LRU cache in memeory; none will be written to disk.
