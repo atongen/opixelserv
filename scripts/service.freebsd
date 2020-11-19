@@ -4,12 +4,7 @@
 # REQUIRE: DAEMON
 # KEYWORD: shutdown
 
-#
-# Add the following lines to /etc/rc.conf to enable opixelserv:
-#
-#opixelserv_enable="YES"
-
-opixelserv_enable=${opixelserv_enable:-"NO"}
+: ${opixelserv_enable:=NO}
 
 . /etc/rc.subr
 
@@ -21,8 +16,9 @@ opixelserv_cmd="/usr/local/bin/${name}"
 pidfile="/var/run/${name}.pid"
 logfile="/var/log/${name}.log"
 command="/usr/sbin/daemon"
+daemon_flags="-o ${logfile} -P ${pidfile} -r"
 
 # prepend daemon args
-opixelserv_flags="-o ${logfile} -P ${pidfile} -r ${opixelserv_cmd} ${opixelserv_flags}"
+opixelserv_flags="${daemon_flags} ${opixelserv_cmd} ${opixelserv_flags}"
 
 run_rc_command "$1"

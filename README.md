@@ -35,7 +35,16 @@ Here's an example of how to run opixelserv on FreeBSD 12.
 
 It assumes that the executable is either built successfully from the previous step, or the release is downloaded and copied locally to `/usr/local/bin`.
 
-First, generate the CA key and certificate if you don't already have one that you want to use.
+Create a system user and group so opixelserv can run unprivileged:
+
+```
+# pw groupadd opixelserv -g 965
+# pw useradd opixelserv -u 965 -g 965 -c opixelserv -d /nonexistent -s /usr/sbin/nologin
+```
+
+(965 was chosen arbitrarily.)
+
+Now, generate the CA key and certificate if you don't already have one that you want to use.
 
 ```
 # opixelserv -g
@@ -46,6 +55,7 @@ If all goes well you will have a new CA key and at `./ca.key` and `./ca.crt`.
 ```
 # mkdir -p /var/cache/pixelserv
 # mv ca.key ca.crt /var/cache/pixelserv
+# chown -R opixelserv:opixelserv /var/cache/pixelserv
 ```
 
 Now copy the service file template into the correct location:
@@ -58,7 +68,7 @@ Add add these lines to `/etc/rc.conf`:
 
 ```
 opixelserv_enable="YES"
-opixelserv_flags="--listen-prometheus=9110 --cacert-path=/var/cache/pixelserv/ca.crt --key-path=/var/cache/pixelserv/ca.key --lru-size=4096 --verbosity=info"
+opixelserv_flags="--user=opixelserv --group=opixelserv --listen-prometheus=9110 --cacert-path=/var/cache/pixelserv/ca.crt --key-path=/var/cache/pixelserv/ca.key --lru-size=4096 --verbosity=info"
 ```
 Adjust the flags as necessary. Consult `opixelserv --help` if necessary.
 
