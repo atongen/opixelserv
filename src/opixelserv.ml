@@ -1,5 +1,17 @@
 open Cohttp_lwt_unix
 
+let setuid = function
+    | Some user ->
+        let e = Unix.getpwnam user in
+        Unix.setuid e.pw_uid;
+    | None -> ()
+
+let setgid = function
+    | Some group ->
+        let e = Unix.getgrnam group in
+        Unix.setgid e.gr_gid;
+    | None -> ()
+
 let hd_opt = function
     | [] -> None
     | [x] -> Some x
@@ -98,31 +110,32 @@ let make_server_https port cacert_path key_path lru_size =
 
 let make_prometheus_server config = Prometheus_unix.serve config
 
-let main_server http_port https_port cacert_path key_path lru_size prometheus_config =
+let main_server http_port https_port cacert_path key_path lru_size prometheus_config maybe_user maybe_group =
     let server_http = make_server_http http_port cacert_path in
     let server_https = make_server_https https_port cacert_path key_path lru_size in
     let prometheus_server = make_prometheus_server prometheus_config in
     let threads = List.concat [[server_http; server_https]; prometheus_server] in
+    setgid maybe_group;
+    setuid maybe_user;
     Lwt_main.run (Lwt.choose threads)
 
-let main http_port https_port cacert_path key_path lru_size prometheus_config gen_ca ca_name () =
+let main http_port https_port cacert_path key_path lru_size prometheus_config gen_ca ca_name maybe_user maybe_group () =
     if gen_ca then
         match (Certgen.gen_ca ~cacert_path ~key_path ~name:ca_name ()) with
         | Ok () -> ()
         | Error (`Msg msg) -> failwith msg
     else
-        main_server http_port https_port cacert_path key_path lru_size prometheus_config
+        main_server http_port https_port cacert_path key_path lru_size prometheus_config maybe_user maybe_group
 
 let setup_log style_renderer level =
-  Fmt_tty.setup_std_outputs ?style_renderer ();
-  Logs.set_level level;
-  Logs.set_reporter (Logs_fmt.reporter ());
-  ()
+    Fmt_tty.setup_std_outputs ?style_renderer ();
+    Logs.set_level level;
+    Logs.set_reporter (Logs_fmt.reporter ());
+    ()
 
 open Cmdliner
 
-let setup_log =
-  Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
+let setup_log = Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
 
 let () =
     let http_port =
@@ -153,8 +166,16 @@ let () =
         let doc = "Name of CA when generating key and certificate" in
         Arg.(value & opt string "opixelserv" & info ["n"; "ca-name"] ~docv:"CA_NAME" ~doc)
     in
+    let user_name =
+        let doc = "setuid to this user name after startup" in
+        Arg.(value & opt (some string) None & info ["u"; "user"] ~docv:"USER" ~doc)
+    in
+    let group_name =
+        let doc = "setgid to this group name after startup" in
+        Arg.(value & opt (some string) None & info ["group"] ~docv:"GROUP" ~doc)
+    in
     let spec = Term.(
-        const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca $ ca_name $ setup_log
+        const main $ http_port $ https_port $ cacert_path $ key_path $ lru_size $ Prometheus_unix.opts $ gen_ca $ ca_name $ user_name $ group_name $ setup_log
     ) in
     let build_info = Info.get () in
     let info =
