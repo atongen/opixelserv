@@ -7,6 +7,6 @@ matrix:
     - os: osx
       osx_image: xcode12.2
       before_install:
-        - homebrew install opam
+        - brew install opam
 install: scripts/deps.sh
 script: scripts/compile.sh
