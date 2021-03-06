@@ -5,10 +5,9 @@ cd "$dir" || exit 1
 
 name="opixelserv"
 
-if [[ "$(opam switch show)" != "$name" ]]; then
-  opam switch "$name"
-  eval "$(opam config env)"
-fi
+opam switch "$name"
+eval "$(opam config env)"
+opam env
 
 OCAML=$(command -v ocaml)
 if [[ -z "$OCAML" ]]; then

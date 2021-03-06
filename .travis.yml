@@ -1,12 +1,21 @@
 matrix:
   include:
-    - os: linux
-      dist: focal
-      before_install:
-        - sudo apt-get -y install opam libev-dev
-    - os: osx
-      osx_image: xcode12.2
-      before_install:
-        - brew install opam
+  - os: linux
+    dist: focal
+    before_install:
+    - sudo apt-get -y install opam libev-dev
+  - os: osx
+    osx_image: xcode12.2
+    before_install:
+    - brew install opam
 install: scripts/deps.sh
 script: scripts/compile.sh
+deploy:
+  provider: releases
+  user: atongenbot
+  password:
+    secure: pOpOtQ63vDYn9zM4jUPWmH9TjUVQIVNAWcsSW9Etpor/ogYVD98JMKsbMqU3lGb3gLRjub9sR3+/q/m17XMgs80rw4qwEr3RBxqN9RBTfb6FEHv6s3FftqoxLBgpk02PdvWuwjqVCy/NAPTyOh8C4AT8TsVbpc9p2LMcM1SBGYqubde5HTyMBvMuL+MFvU/TzyO1EemxuZ8OQzTIP4Nh9C/8BvHxOhMp0jCBcRXsdyxVPgUC6YmB1lHbJFniUhJMQQStm0bRboXEE/eAhXh+o8BEZ3XmbqDDehNbfvV3FeSHN7V2lUgmYVbPc5kNzLJoLBJgEbKMJmCPgsbP7qSS6kXTgVidbkGi5bCc3YcbUf0Rsk4lucF8Ub+bZIM0E2P7wGIdXrbWk7dv5P1hBWwfOkSPT5qd/qiYc2TJi0ONLh3wDzIc6FQ+xjrlgCqjFpW7wz3QSMk3v86Wpjp5WPtOSPVa6/RtWHOwPrOF46DA+toR62q5u7scwagtRjo+ibiYTErqrtIU6IB6Sf+4T6jUMmiVwXr1fP5k6YM+xGW+UyACIAIz9noUlt+A1MaiqYfRvyWbDfGcZ9rf8CEO9u62JKeQMFbuMBVBYJaUZu1Tmacakn22BQou8L3V/Cwf+bXZbAjIUcVB/96ZtwRpTEHtEqYu2AGmJL1oOWOezXPYpnE=
+  file: bin/opixelserv
+  skip_cleanup: true
+  on:
+    tags: true

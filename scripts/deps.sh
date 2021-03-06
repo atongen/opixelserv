@@ -14,10 +14,8 @@ if ! opam switch list | cat | grep -q "$name"; then
   opam switch create "$name" "$compiler"
 fi
 
-if [[ "$(opam switch show)" != "$name" ]]; then
-  opam switch "$name"
-  eval "$(opam config env)"
-fi
+opam switch "$name"
+eval "$(opam config env)"
 
 set -e
 
