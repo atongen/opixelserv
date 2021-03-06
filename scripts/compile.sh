@@ -7,16 +7,6 @@ name="opixelserv"
 
 opam switch "$name"
 eval "$(opam config env)"
-opam env
-
-OCAML=$(command -v ocaml)
-if [[ -z "$OCAML" ]]; then
-  OCAML="${HOME}/.opam/${name}/bin/ocaml"
-fi
-if [[ ! -f "$OCAML" ]]; then
-  >&2 echo "Unable to find ocaml in PATH: ${PATH}"
-  exit 1
-fi
 
 info_file="src/info.ml"
 git checkout "$info_file"
@@ -33,7 +23,7 @@ version=$(grep -E '^version: ' "${name}.opam" | cut -d '"' -f2)
 bug_reports=$(grep -E '^bug-reports: ' "${name}.opam" | cut -d '"' -f2)
 build_time=$(date -u +"%Y-%m-%d %T")
 build_hash=$(git rev-parse HEAD | cut -c 1-7 2>/dev/null || echo "unset")
-ocaml_version=$($OCAML -vnum)
+ocaml_version=$(ocaml -vnum)
 tls_hash=$(cd "${dir}/../ocaml-tls" && git rev-parse HEAD | cut -c 1-7 2>/dev/null || echo "unset")
 conduit_hash=$(cd "${dir}/../ocaml-conduit" && git rev-parse HEAD | cut -c 1-7 2>/dev/null || echo "unset")
 
