@@ -1,0 +1,5 @@
+dist: focal
+before_install:
+  - sudo apt-get -y install opam libev-dev
+install: scripts/deps.sh
+script: scripts/compile.sh
