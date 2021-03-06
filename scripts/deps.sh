@@ -29,7 +29,7 @@ opam install -yq \
 
 cd "${dir}/.." || exit 1
 if [[ ! -d "ocaml-tls" ]]; then
-  git clone git@gitolite:ocaml-tls.git
+  git clone git@github.com:atongen/ocaml-tls.git
 fi
 cd ocaml-tls
 
@@ -45,7 +45,7 @@ opam pin add -yq tls.0.12.5 .
 
 cd "${dir}/.." || exit 1
 if [[ ! -d "ocaml-conduit" ]]; then
-  git clone git@gitolite:ocaml-conduit.git
+  git clone git@github.com:atongen/ocaml-conduit.git
 fi
 cd ocaml-conduit
 
