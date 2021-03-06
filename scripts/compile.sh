@@ -5,6 +5,11 @@ cd "$dir" || exit 1
 
 name="opixelserv"
 
+if [[ "$(opam switch show)" != "$name" ]]; then
+  opam switch "$name"
+  eval "$(opam config env)"
+fi
+
 info_file="src/info.ml"
 git checkout "$info_file"
 
