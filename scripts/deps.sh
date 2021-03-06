@@ -7,7 +7,7 @@ name="opixelserv"
 branch="dynamic-tls"
 compiler="4.10.1"
 
-opam init -n
+opam init -n --bare
 opam update
 
 if ! opam switch list | cat | grep -q "$name"; then
