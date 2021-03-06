@@ -1,5 +1,7 @@
 # opixelserv
 
+[![Build Status](https://travis-ci.org/atongen/opixelserv.svg?branch=master)](https://travis-ci.org/atongen/opixelserv)
+
 A small http and https null content server written in ocaml.
 
 It can be used as an alternative to
