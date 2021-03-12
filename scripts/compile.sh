@@ -37,10 +37,3 @@ sed -i.bak 's/conduit_hash = "[^"]*"/conduit_hash = "'"${conduit_hash}"'"/' "$in
 
 dune build @install
 test -L bin || ln -s _build/install/default/bin .
-
-if [[ -n "$TRAVIS_OS_NAME" ]]; then
-  mkdir -p dist
-  cp -a "_build/default/src/${name}.exe" "dist/${name}-${TRAVIS_OS_NAME}-${version}"
-fi
-
-ls -l dist/

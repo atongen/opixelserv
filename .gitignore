@@ -6,7 +6,6 @@ opixelserve.install
 .bsb.lock
 /_build
 /bin
-/dist
 /lib
 /.vscode
 /test/tmp/

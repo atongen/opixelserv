@@ -1,7 +1,5 @@
 # opixelserv
 
-[![Build Status](https://travis-ci.org/atongen/opixelserv.svg?branch=master)](https://travis-ci.org/atongen/opixelserv)
-
 A small http and https null content server written in ocaml.
 
 It can be used as an alternative to
@@ -19,6 +17,11 @@ Dependencies on FreeBSD (tested on version 12):
 * gmake
 * libev
 * pkgconf
+
+On linux (ubuntu), you will need:
+
+* opam
+* libev-dev
 
 Then to actually build, run:
 
