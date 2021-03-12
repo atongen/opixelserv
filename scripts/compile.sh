@@ -42,3 +42,6 @@ if [[ -n "$TRAVIS_OS_NAME" ]]; then
   mkdir -p dist
   cp "_build/install/default/bin/${name}" "dist/${name}-${TRAVIS_OS_NAME}-${version}"
 fi
+
+ls -l _build/install/default/bin/
+ls -l dist/
