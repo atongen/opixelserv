@@ -12,7 +12,7 @@ install: scripts/deps.sh
 script: scripts/compile.sh
 deploy:
   provider: releases
-  file: bin/opixelserv
+  file: dist/*
   skip_cleanup: true
   api_key:
     secure: ZPIsljoPxve2j9DX/F53Q6OUP0tr4d/mf8+A7oAaGUzRcbMhAP+hX8ADBRrCQ8W5mCB+HHQxyT/pokHMPTDxuFPhIv/Mqj2p1nZFs0ImTNM9p1LpQMhiKvIVETAazKgkjrSrQAJmnQ/fHYWVjEYB6SV4zbx6el8LPPKX06Xp3subVoMaomeXMSUVBzSFITQVe5d4JoimS4ga1bMixSrS9RzHH/aWj9/svIL47LsNXlgS1rahmQboek5QawMJE4GPqun22exvkR89wPpzGr235aMiLqI2hsKCaNaUzoC8OHjVpyg0ht+0ttfYu0QoeResLcPn7K9YAessaBm8jtC70vC4PbXKisDxDzV/Vnvs4uHStVC8bT5MvvgQzqSTqrA53o2kSP98l9dsSA1CBsmUJL/xJmQr1S5+Ma6dHKDFUd744TYMfvOlOtJJ3hklaqherBvevKhKUIADWsoHQJT+Lu7iOYgif8/A04RTY5+l9mKyoxTPNbR4Oj3Dv+JQo5sTMkBIO1a74IpixN+f5x+lFeapEPXV6c8mmm5Lth67LKhgmbH87SXAtYA85WshIsoeAufqgsYFwh0CEgdb7FBp1KK3IdfwKRu2SB/wr1q3UsDNUeLR94WMP9udK74gGmfRb6G/kSi0wPMEmVRurakY3+05sH4qd2FSKx+df1mNTQc=
