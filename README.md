@@ -30,8 +30,8 @@ Then to actually build, run:
 ```
 
 NOTE: This will checkout forked versions of
-[ocaml-tls](https://github.com/mirleft/ocaml-tls) and
-[ocaml-conduit](https://github.com/mirage/ocaml-conduit/).
+[ocaml-tls](https://github.com/mirleft/ocaml-tls) ([dynamic-tls](https://github.com/atongen/ocaml-conduit/tree/dynamic-tls)) and
+[ocaml-conduit](https://github.com/mirage/ocaml-conduit/) ([dynamic-tls](https://github.com/atongen/ocaml-tls/tree/dynamic-tls)).
 
 Which should result in an executable at `bin/opixelserv` (which is actually a
 soft link to `_build/default/src/opixelserv.exe`).
