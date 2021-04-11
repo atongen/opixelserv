@@ -5,7 +5,7 @@ cd "$dir" || exit 1
 
 name="opixelserv"
 branch="dynamic-tls"
-compiler="4.10.1"
+compiler="4.10.2"
 
 opam init -n --bare
 opam update
